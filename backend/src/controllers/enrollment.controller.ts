@@ -126,7 +126,7 @@ export async function enrollInCourse(req: Request, res: Response) {
     );
 
     res.status(201).json(result.rows[0]);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error enrolling in course:", error);
     if (error.code === "23505") {
       // Unique constraint violation
@@ -242,7 +242,19 @@ export async function getEnrolledCourseDetails(req: Request, res: Response) {
     // Get lessons with progress
     const lessonsResult = await pool.query(
       `SELECT 
-        l.*,
+        l.id,
+        l.course_id,
+        l.module_id,
+        l.title,
+        l.description,
+        l.order_index,
+        l.duration_minutes,
+        l.video_url,
+        l.s3_key,
+        l.thumbnail_url,
+        l.status,
+        l.created_at,
+        l.updated_at,
         m.title as module_title,
         m.id as module_id,
         m.order_index as module_order,

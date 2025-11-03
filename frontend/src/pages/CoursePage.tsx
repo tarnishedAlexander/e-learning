@@ -74,12 +74,12 @@ export default function CoursePage() {
     videoApi
       .getVideoUrl(lesson.s3_key)
       .then((url) => {
-        console.log("Video URL obtained:", url);
+        console.log("✅ Video URL obtained successfully:", url);
         setVideoUrl(url);
         setLoadingVideo(false);
       })
       .catch((error) => {
-        console.error("Error loading video:", error);
+        console.error("❌ Error loading video:", error);
         toast.error(
           `Failed to load video: ${error.message || "Unknown error"}`
         );
