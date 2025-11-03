@@ -67,10 +67,10 @@ export const VideoPlayer = ({
             errorMsg = "Video loading aborted";
             break;
           case video.error.MEDIA_ERR_NETWORK:
-            errorMsg = "Network error while loading video";
+            errorMsg = "Network error - check if URL is accessible and CORS is configured";
             break;
           case video.error.MEDIA_ERR_DECODE:
-            errorMsg = "Video decoding error";
+            errorMsg = "Video decoding error - file may be corrupted";
             break;
           case video.error.MEDIA_ERR_SRC_NOT_SUPPORTED:
             errorMsg = "Video format not supported";
@@ -80,7 +80,13 @@ export const VideoPlayer = ({
         }
       }
 
-      console.error("Video error:", video.error, videoUrl);
+      console.error("Video error details:", {
+        errorCode: video.error?.code,
+        errorMsg: video.error?.message,
+        videoUrl: videoUrl,
+        networkState: video.networkState,
+        readyState: video.readyState
+      });
       setError(errorMsg);
       setIsLoading(false);
     };
@@ -144,6 +150,7 @@ export const VideoPlayer = ({
               className="w-full h-full object-contain"
               playsInline
               crossOrigin="anonymous"
+              controls={false}
               onLoadStart={() => {
                 setIsLoading(true);
                 setError(null);

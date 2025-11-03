@@ -6,14 +6,19 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { GraduationCap } from "lucide-react";
 import { toast } from "sonner";
+import { authApi } from "@/lib/api";
 
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [selectedRole, setSelectedRole] = useState<"student" | "professor" | "admin">("student");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email || !password) {
@@ -21,20 +26,65 @@ export default function Login() {
       return;
     }
 
-    // Mock login - redirect based on role
-    localStorage.setItem("userRole", selectedRole);
-    toast.success("Welcome to EduVerse!");
+    setIsLoading(true);
+    try {
+      const response = await authApi.login(email, password);
+      const user = response.user;
+
+      // Store user info in localStorage
+      localStorage.setItem("userRole", user.role);
+      localStorage.setItem("userId", user.id);
+      localStorage.setItem("userEmail", user.email);
+      if (user.firstName) localStorage.setItem("userName", user.firstName);
+
+      toast.success("Welcome to EduVerse!");
+      
+      // Redirect based on role
+      switch (user.role) {
+        case "student":
+          navigate("/student");
+          break;
+        case "professor":
+          navigate("/professor");
+          break;
+        case "admin":
+          navigate("/admin");
+          break;
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Login failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    switch (selectedRole) {
-      case "student":
-        navigate("/student");
-        break;
-      case "professor":
-        navigate("/professor");
-        break;
-      case "admin":
-        navigate("/admin");
-        break;
+    if (!email || !password || !firstName || !lastName) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await authApi.register(email, password, firstName, lastName, selectedRole);
+      toast.success("Registration successful! Please log in.");
+      
+      // Clear form and switch to login mode
+      setIsRegistering(false);
+      setPassword("");
+      setFirstName("");
+      setLastName("");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Registration failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -50,12 +100,36 @@ export default function Login() {
           <div>
             <CardTitle className="text-3xl font-bold">EduVerse</CardTitle>
             <CardDescription className="text-base mt-2">
-              Sign in to your learning platform
+              {isRegistering ? "Create your account" : "Sign in to your learning platform"}
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={isRegistering ? handleRegister : handleLogin} className="space-y-4">
+            {isRegistering && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
+                </div>
+              </>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -110,10 +184,25 @@ export default function Login() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" size="lg">
-              Sign In
+            <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+              {isLoading ? "Loading..." : isRegistering ? "Create Account" : "Sign In"}
             </Button>
           </form>
+
+          <div className="text-center text-sm">
+            <button
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                setEmail("");
+                setPassword("");
+                setFirstName("");
+                setLastName("");
+              }}
+              className="text-primary hover:underline"
+            >
+              {isRegistering ? "Already have an account? Sign in" : "Don't have an account? Register"}
+            </button>
+          </div>
         </CardContent>
       </Card>
     </div>

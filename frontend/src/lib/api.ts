@@ -1,5 +1,48 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
+interface User {
+  id: number;
+  email: string;
+  role: "student" | "professor" | "admin";
+  firstName?: string;
+  lastName?: string;
+}
+
+// Auth API
+export const authApi = {
+  register: async (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+    role: "student" | "professor" | "admin"
+  ) => {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, firstName, lastName, role }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to register");
+    }
+    return response.json();
+  },
+
+  login: async (email: string, password: string) => {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to login");
+    }
+    return response.json();
+  },
+};
+
 interface Course {
   id?: number;
   professor_id: number;
