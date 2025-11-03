@@ -11,6 +11,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import CoursePage from "./pages/CoursePage";
 import ProfessorCreate from "./pages/ProfessorCreate";
 import NotFound from "./pages/NotFound";
+import CoursesAvailable from "./pages/CoursesAvailable";
+import CoursePreview from "./pages/CoursePreview";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +26,11 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/student/courses" element={<CoursesAvailable />} />
+          <Route
+            path="/student/courses/:courseId/preview"
+            element={<CoursePreview />}
+          />
           <Route path="/professor" element={<ProfessorDashboard />} />
           <Route path="/professor/create" element={<ProfessorCreate />} />
           <Route path="/admin" element={<AdminDashboard />} />
