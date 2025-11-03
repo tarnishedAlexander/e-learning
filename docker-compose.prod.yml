@@ -15,6 +15,14 @@ services:
     restart: unless-stopped
     networks:
       - elearning-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    environment:
+      - TZ=UTC
 
   # Backend API
   backend:
@@ -31,11 +39,16 @@ services:
     networks:
       - elearning-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # Frontend React App
   frontend:
@@ -43,11 +56,16 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://api.elearning.local/api
+        - VITE_API_URL=/api
     container_name: elearning-frontend
     restart: unless-stopped
     networks:
       - elearning-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   elearning-network:
