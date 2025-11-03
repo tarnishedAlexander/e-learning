@@ -31,12 +31,15 @@ ssh -i key.pem ubuntu@IP
 
 # 3. En EC2
 cd ~/e-learning
-./setup-ec2.sh  # Instala Docker
-newgrp docker   # Aplica cambios
-./deploy.sh     # Lanza todo
+./setup-ec2.sh      # Instala Docker
+newgrp docker       # Aplica cambios
+./setup-dns.sh      # Configura elearning.local
+./deploy.sh         # Lanza todo
 ```
 
-Accede a `http://IP`
+Accede a:
+- `http://18.222.231.30` (IP pública)
+- `http://elearning.local` (dominio local en EC2)
 
 ## Config (.env)
 
